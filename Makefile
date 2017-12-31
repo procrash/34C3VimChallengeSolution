@@ -233,7 +233,7 @@ DIST          = ../Vim/vim-5ca46d1e8afdc0b30b25fdf8f69f868b33a16241.txt.1 \
 		../../../Qt_5.9/5.10.0/clang_64/mkspecs/features/exceptions.prf \
 		../../../Qt_5.9/5.10.0/clang_64/mkspecs/features/yacc.prf \
 		../../../Qt_5.9/5.10.0/clang_64/mkspecs/features/lex.prf \
-		vim.pro  ../Vim/vi.cpp
+		vim.pro commands.h ../Vim/vi.cpp
 QMAKE_TARGET  = vim
 DESTDIR       = 
 TARGET        = vim

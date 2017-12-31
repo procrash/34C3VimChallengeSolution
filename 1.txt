@@ -1,0 +1,143 @@
+34C3_"""""""""""""""""""""""""""""""""
+G                   Goto line 6
+f2                  find  2 51
+"a                  Storing in register a 2
+^                   Go to begining of line 5
+f0                  find  0 3
+"c                  Storing in register c 0
+"a                  Appending to register a  Result is:20
+^                   Go to begining of line 5
+fh                  find  h 42
+"a                  Appending to register a  Result is:20h
+^                   Go to begining of line 5
+fj                  find  j 52
+"a                  Appending to register a  Result is:20hj
+^                   Go to begining of line 5
+fG                  find  G 48
+"g                  Storing in register g G
+^                   Go to begining of line 5
+fk                  find  k 2
+"g                  Appending to register g  Result is:Gk
+G                   Goto end of file 
+$                   Go to end of line 262
+FF                  Reverse find  F Found @76
+"g                  Appending to register g F10 Result is:GkF10
+$                   Go to end of line 262
+FF                  Reverse find  F Found @76
+"h                  Storing in register h F
+FF                  Reverse find  F Found @76
+"h                  Appending to register h  Result is:FF
+G                   Goto line 260
+Y                   Y Yank whole line 1Gff"dyl"eyl"fyl4G@c"Dyl6G@dhj"Eylj"Fyl1Gfl"Cyl6Gf2"bylF0"Byl261GY@"3c043Bh4Hf5# to register " 
+@                   Executing code in register " 1Gff"dyl"eyl"fyl4G@c"Dyl6G@dhj"Eylj"Fyl1Gfl"Cyl6Gf2"bylF0"Byl261GY@"3c043Bh4Hf5#
+G                   Goto line 1
+ff                  find  f 10
+"d                  Storing in register d f
+"e                  Storing in register e f
+"f                  Storing in register f f
+G                   Goto line 4
+@                   Executing code in register c 0
+"d                  Appending to register d  Result is:f3
+G                   Goto line 6
+@                   Executing code in register d f3
+f3                  find  3 8
+h                   Go one to the left 7
+j                   Go one line down 6
+"e                  Appending to register e  Result is:f,
+j                   Go one line down 7
+"f                  Appending to register f  Result is:fG
+G                   Goto line 1
+fl                  find  l 11
+"c                  Appending to register c  Result is:0l
+G                   Goto line 6
+f2                  find  2 51
+"b                  Storing in register b 2
+FF                  Reverse find  F Found @10
+"b                  Appending to register b  Result is:2F
+G                   Goto line 261
+Y                   Y Yank whole line 9G@e19l@a"Byt.6Gfj"Byl6Gf2"aylF0"Ayl9G@f19l@b"Ayt.6Gfj"Ayl40|@a260GY@"@1fBkya5B^ to register " 
+@                   Executing code in register " 9G@e19l@a"Byt.6Gfj"Byl6Gf2"aylF0"Ayl9G@f19l@b"Ayt.6Gfj"Ayl40|@a260GY@"@1fBkya5B^
+G                   Goto line 9
+@                   Executing code in register e f,
+f,                  find  , 21
+l                   Go one to the right 22
+@                   Executing code in register a 20hj
+h                   Go one to the left 21
+j                   Go one line down 9
+"b                  Appending to register b  Result is:2F33
+G                   Goto line 6
+fj                  find  j 52
+"b                  Appending to register b  Result is:2F33j
+G                   Goto line 6
+f2                  find  2 51
+"a                  Storing in register a 2
+FF                  Reverse find  F Found @10
+"a                  Appending to register a  Result is:2F
+G                   Goto line 9
+@                   Executing code in register f fG
+fG                  find  G 16
+l                   Go one to the right 17
+@                   Executing code in register b 2F33j
+FF                  Reverse find  F Found @10
+j                   Go one line down 9
+"a                  Appending to register a  Result is:2Fl179
+G                   Goto line 6
+fj                  find  j 52
+"a                  Appending to register a  Result is:2Fl179j
+|                   Moving cursor to screen column 40
+@                   Executing code in register a 2Fl179j
+FF                  Reverse find  F Found @10
+j                   Go one line down 6
+G                   Goto line 260
+Y                   Y Yank whole line 1Gff"dyl"eyl"fyl4G@c"Dyl6G@dhj"Eylj"Fyl1Gfl"Cyl6Gf2"bylF0"Byl261GY@"3c043Bh4Hf5# to register " 
+@                   Executing code in register " 1Gff"dyl"eyl"fyl4G@c"Dyl6G@dhj"Eylj"Fyl1Gfl"Cyl6Gf2"bylF0"Byl261GY@"3c043Bh4Hf5#
+G                   Goto line 1
+ff                  find  f 10
+"d                  Storing in register d f
+"e                  Storing in register e f
+"f                  Storing in register f f
+G                   Goto line 4
+@                   Executing code in register c 0l
+l                   Go one to the right 1
+"d                  Appending to register d  Result is:f4
+G                   Goto line 6
+@                   Executing code in register d f4
+f4                  find  4 50
+h                   Go one to the left 49
+j                   Go one line down 6
+"e                  Appending to register e  Result is:f,
+j                   Go one line down 7
+"f                  Appending to register f  Result is:f_
+G                   Goto line 1
+fl                  find  l 11
+"c                  Appending to register c  Result is:0ll
+G                   Goto line 6
+f2                  find  2 51
+"b                  Storing in register b 2
+FF                  Reverse find  F Found @10
+"b                  Appending to register b  Result is:2F
+G                   Goto line 261
+Y                   Y Yank whole line 9G@e19l@a"Byt.6Gfj"Byl6Gf2"aylF0"Ayl9G@f19l@b"Ayt.6Gfj"Ayl40|@a260GY@"@1fBkya5B^ to register " 
+@                   Executing code in register " 9G@e19l@a"Byt.6Gfj"Byl6Gf2"aylF0"Ayl9G@f19l@b"Ayt.6Gfj"Ayl40|@a260GY@"@1fBkya5B^
+G                   Goto line 9
+@                   Executing code in register e f,
+f,                  find  , 21
+l                   Go one to the right 22
+@                   Executing code in register a 2Fl179j
+FF                  Reverse find  F Found @10
+j                   Go one line down 9
+"b                  Appending to register b  Result is:2Fl179
+G                   Goto line 6
+fj                  find  j 52
+"b                  Appending to register b  Result is:2Fl179j
+G                   Goto line 6
+f2                  find  2 51
+"a                  Storing in register a 2
+FF                  Reverse find  F Found @10
+"a                  Appending to register a  Result is:2F
+G                   Goto line 9
+@                   Executing code in register f f_
+f_                  find  _ 1
+l                   Go one to the right 2
+@                   Executing code in register b 2Fl179j
+(50) (551) (50) (53) (50) (542) (50) (552) (50) (548) (50) (52) (2620) (26279) (26276) (26279) (26276) (26276) (2590) (00) (010) (30) (50) (58) (57) (67) (77) (00) (011) (50) (551) (510) (2600) (80) (821) (822) (821) (921) (50) (552) (50) (551) (510) (80) (816) (817) (810) (910) (50) (552) (540) (510) (610) (2590) (00) (010) (30) (31) (50) (550) (549) (649) (749) (00) (011) (50) (551) (510) (2600) (80) (821) (822) (810) (910) (50) (552) (50) (551) (510) (80) (81) (82) 

@@ -1,0 +1,5 @@
+ digraph graphname
+ {
+     "A   AA" -> "B" -> "C";
+     "B" -> "D";
+ }

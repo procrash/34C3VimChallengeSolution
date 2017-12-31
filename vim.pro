@@ -22,3 +22,6 @@ QMAKE_LFLAGS += -std=c++14  -fpermissive
 
 DISTFILES += \
     ../Vim/vim-5ca46d1e8afdc0b30b25fdf8f69f868b33a16241.txt.1
+
+HEADERS += \
+    commands.h

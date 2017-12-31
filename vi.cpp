@@ -8,7 +8,104 @@
 #include <cctype>
 #include <map>
 
+#include <vector>
+
 #include <boost/lexical_cast.hpp>
+#include <commands.h>
+
+void initDotFile() {
+    std::ofstream os;
+    os.open("dotFile.txt", std::ios::binary);
+    os << "digraph graphname" << std::endl;
+    os << "{" << std::endl;
+
+
+    os.close();
+}
+
+uint64_t flagNr = 0;
+
+std::vector<std::string> colors = {
+    "red",
+    "blue",
+    "green",
+    "orange",
+    "pink"
+};
+
+std::string edgeColor = "black";
+
+std::string lastPositionString = "";
+
+uint64_t locationsWritten = 0;
+
+
+std::map<std::string, std::vector<std::pair<uint64_t, uint64_t>>> stateMachinePairs;
+
+
+std::string flag = "34C3_012345678901234567890123456789012";
+
+void addDotLocation(uint64_t row, uint64_t col) {
+
+    if (row==107 && col==0) {
+        std::cout << "Found destination with " << flag << std::endl;
+        exit(1);
+    }
+    stateMachinePairs[flag].push_back(std::pair<uint64_t, uint64_t>(row,col));
+
+
+    /*
+    if (row==0 && col==11) {
+        std::cout << "Nächstes zeichen" << flagNr << std::endl;
+    }*/
+
+
+    locationsWritten++;
+
+    if (locationsWritten>300) return;
+
+    std::ofstream os;
+    os.open("dotFile.txt", std::ios::app);
+
+    std::stringstream iss;
+    iss << "\"" << row << "," << col << "\"";
+
+    if (lastPositionString!="") {
+        std::string currentPosString = iss.str();
+
+        os << "edge [color=" << edgeColor << "]" << std::endl;
+
+        os << lastPositionString << " -> " << currentPosString << std::endl;
+
+        lastPositionString = currentPosString;
+    } else {
+        std::string currentPosString = iss.str();
+        os <<  currentPosString << std::endl;
+        lastPositionString = currentPosString;
+
+    }
+
+    os.close();
+
+    /*
+    if (row==3 && col==16) {
+        exit(1);
+    }*/
+}
+
+
+void printCommand(std::string command, std::string comment) {
+    /*
+    std::cout << command;
+
+    for (int i=0; i<20-command.length();i++) {
+        std::cout << " ";
+    }
+    std::cout << comment << std::endl;
+    */
+}
+
+
 
 bool tryReadNumber(std::string& line, uint64_t& number) {
     int nrOfDigits =-1;
@@ -36,97 +133,10 @@ std::string parseNextCommand(int& currentCursorPos,
                              std::string lineUnmodified,
                              std::vector<std::string> lines) {
 
+    static int gotoCounter =0;
 
 
-    std::vector<std::string> commands = {
-        // ----------------------
-        // Navigation Commands...
-        // ----------------------
-
-        // Gotos...
-        "1G","4G","6G","9G",
-        "260G","261G",
-        "G",
-
-        // Cursor
-        "h", "j", "k", "l",
-
-        // Beginning, end of Line
-        "^", "$",
-
-        // From Top/Bottom
-        "0H",
-
-        // ----------------------
-        // Finds...
-        // ----------------------
-
-        // Forward finds...
-        "f0",
-        "f2",
-        "fh", "fj", "fk", "fl",
-
-        "fG",
-        "fB",
-        "ff",
-
-        // Backward finds...
-        "Fh",
-        "F@",
-        "F0",
-        "F1",
-        "FY",
-        "\"G",
-
-        // ----------------------
-        // Register access...
-        // ----------------------
-
-        // Single character...
-        "\"ayl",
-        "\"byl",
-        "\"cyl",
-        "\"dyl",
-        "\"eyl",
-        "\"fyl",
-        "\"gyl",
-        "\"hyl",
-
-        // Register access appends...
-        "\"Ayl",
-        "\"Byl",
-        "\"Cyl",
-        "\"Dyl",
-        "\"Eyl",
-        "\"Fyl",
-        "\"Gyl",
-        "\"Hyl",
-
-        // Multi character...
-        "\"Ayt."
-
-
-        "y3l",
-        "yt.",
-
-        // Execute code commands...
-        "@a",
-        "@b",
-        "@c",
-
-        "@d",
-        "@e",
-        "@f",
-
-        /*
-            "Y@\"",
-            ,"Y@\"", "3c0", "443Bh4Hf5#",
-            ,"19l","\"B",,
-            "19l","40|",
-            "l" ,"Y@""" ,"@1",
-            ,"ya5B^"
-            */
-    };
+    std::string debugBefore = line;
 
     // Test if line starts with number...
     uint64_t number = -1;
@@ -135,28 +145,32 @@ std::string parseNextCommand(int& currentCursorPos,
     char c,d,e,f;
     std::stringstream ss;
     std::string regName;
+    bool found = false;
 
     // Parse first charcter of command
     // std::cout << line << std::endl;
 
     switch (line[0]) {
+    /*
     case 'a' : // append mode
         std::cout << "Switching to append mode" << std::endl;
         std::cout << "Appending " << line << " @" << currentLinePos << ":"<<currentCursorPos << std::endl;
         line = "";
         break;
+    */
 
      case '|' : // to screen column "
 
         if (numberFound) {
-            std::cout << "Moving cursor to screen column" << number <<std::endl;
             line = line.substr(1,line.size());
             currentCursorPos = number;
+            printCommand("|","Moving cursor to screen column "+std::to_string(number));
+
+            addDotLocation(currentLinePos, currentCursorPos);
         }
 
         break;
-    case 'y' : // Yank current character to register "
-        std::cout << "Yanking current character" << std::endl;
+    case 'y' :
 
         ss << lines[currentLinePos][currentCursorPos];
 
@@ -164,66 +178,93 @@ std::string parseNextCommand(int& currentCursorPos,
 
         registerMap["\""] = ss.str();
 
+        printCommand("y","Yank current character "+ss.str()+" to register \" ");
+
+
         break;
 
-    case 'Y' : // Yank whole line to register "
-        std::cout << "Yanking current line" << std::endl;
+    case 'Y' :
+
+        //std::cout << "Yanking current line" << std::endl;
 
         line = line.substr(1,line.size());
+
+        printCommand("Y","Y Yank whole line "+lines[currentLinePos]+" to register \" ");
 
         registerMap["\""] = lines[currentLinePos];
 
         break;
     case '@' : // Execute
 
+
+
         c = line[1];
         ss << c;
         regName=ss.str();
 
-        std::cout << "Executing code in register " << regName << " " << registerMap[regName]<<" " << std::endl;
-
         line = line.substr(2,line.size()); // e.g @"
 
         line = registerMap[regName]+ line;
+
+        printCommand("@"+regName,"Executing code in register " + regName + " " + registerMap[regName]);
+
         break;
 
     case '^' : // Go to beginning of line
-        std::cout << "Go to begining of line" << std::endl;
+
+        printCommand("^","Go to begining of line "+std::to_string(currentLinePos));
 
         currentCursorPos = 0;
+
+        addDotLocation(currentLinePos, currentCursorPos);
+
         line = line.substr(1,line.size()); // e.g "Ayt.
         break;
     case '$' : // Go to the end of line
-        std::cout << "Go to end of line" << std::endl;
+
+        printCommand("$","Go to end of line "+std::to_string(currentLinePos));
 
         currentCursorPos = lines[currentLinePos].size()-1;
+
+        addDotLocation(currentLinePos, currentCursorPos);
+
         line = line.substr(1,line.size()); // e.g "Ayt.
         break;
     case 'l' : // Go one to the right
-        std::cout << "Go one to the right" << std::endl;
 
         currentCursorPos++;
 
         if (currentCursorPos>lines[currentLinePos].size()-1) currentCursorPos = lines[currentLinePos].size()-1;
 
+        printCommand("l","Go one to the right "+std::to_string(currentCursorPos));
+
+        addDotLocation(currentLinePos, currentCursorPos);
+
         line = line.substr(1,line.size()); // e.g "Ayt.
         break;
 
     case 'h' : // Go one to the left
-        std::cout << "Go one left" << std::endl;
 
         if (currentCursorPos>0) currentCursorPos--;
+
+        printCommand("h","Go one to the left "+std::to_string(currentCursorPos));
+
+        addDotLocation(currentLinePos, currentCursorPos);
+
         line = line.substr(1,line.size());
         break;
     case 'j' : // Go one down, if down line is less strlen then go to the end,
         // Not implemented yet, if one goes up again, go to the oldposition...
 
-        std::cout << "Go one down" << std::endl;
-
         currentLinePos++;
         if (currentLinePos>lines.size()-1) currentLinePos = lines.size()-1;
 
         if (currentCursorPos>lines[currentLinePos].size()-1) currentCursorPos = lines[currentLinePos].size()-1;
+
+        printCommand("j","Go one line down "+std::to_string(currentLinePos));
+
+        addDotLocation(currentLinePos, currentCursorPos);
+
 
         line = line.substr(1,line.size());
         break;
@@ -231,67 +272,110 @@ std::string parseNextCommand(int& currentCursorPos,
     case 'k' : // Go one up, if up line is less strlen then go to the end,
         // Not implemented yet, if one down up again, go to the oldposition...
 
-        std::cout << "Go one up" << std::endl;
-
         if (currentLinePos>0) currentLinePos--;
         if (currentCursorPos>lines[currentLinePos].size()-1) currentCursorPos = lines[currentLinePos].size()-1;
+
+        printCommand("k","Go one line up "+std::to_string(currentLinePos));
+
+        addDotLocation(currentLinePos, currentCursorPos);
 
         line = line.substr(1,line.size());
         break;
     case 'G' : // Goto Line found
-        std::cout << "Goto";
+
         if (numberFound) {
             currentLinePos = number-1;
-            std::cout << " line " << number;
+
+            printCommand(std::to_string(number)+"G","Goto line "+std::to_string(number));
+
+            if (number==260) {
+
+                if (flagNr<colors.size()-1)
+                    edgeColor = colors[flagNr];
+                else
+                    edgeColor = "black";
+
+                flagNr++;
+            }
+
+
+
         } else {
             currentLinePos = lines.size()-1;
-            std::cout << " eof";
-        }
-
-        std::cout << std::endl;
-        if (number==260) {
-            std::cout << "Next character from FLag" << std::endl;
-
+            printCommand("G","Goto end of file ");
         }
 
         currentCursorPos = 0;
 
+        addDotLocation(currentLinePos, currentCursorPos);
+
         line = line.substr(1,line.size());
         break;
     case 'f' : // find command found
+
         c = line[1];
-        std::cout << "Trying to find " << c << "...";
+        ss << c;
+
+        found = false;
 
         for (int i=currentCursorPos; i<lines[currentLinePos].size(); ++i) {
             // std::cout << "Looking at " << i << " " << lines[currentLinePos][i] << std::endl;
             if (lines[currentLinePos][i]==c) {
-                std::cout << "found at " << i;
+                // std::cout << "found at " << i;
                 currentCursorPos = i;
+                printCommand("f"+ss.str(),"find  "+ss.str()+" "+std::to_string(i));
+
+                addDotLocation(currentLinePos, currentCursorPos);
+
+                found = true;
                 break;
             }
         }
 
-        std::cout << std::endl;
+        if (!found) {
+            // std::cout << "Error, could not find character " << ss.str();
+            line = "";
+            return line;
+        }
+
+
+
 
         line = line.substr(2,line.size());
         break;
     case 'F' : // reverse find command found
-        c = line[0];
-        std::cout << "Trying to reverse find " << c << "...";
+
+
+        c = line[1];
+        ss << c;
+
+        found = false;
 
         for (int i=currentCursorPos; i>=0; --i) {
             if (lines[currentLinePos][i]==c) {
-                std::cout << "found at " << i;
+                // std::cout << "found at " << i;
                 currentCursorPos = i;
+
+                printCommand("F"+ss.str(),"Reverse find  "+ss.str()+" Found @"+std::to_string(i));
+                found = true;
+
+                addDotLocation(currentLinePos, currentCursorPos);
+
+
                 break;
             }
         }
 
-        std::cout << std::endl;
+        if (!found) {
+            // std::cout << "Error, could not find character " << ss.str();
+            line = "";
+            return line;
+        }
 
         line = line.substr(2,line.size());
         break;
     case '\"' : // Register command found
+
 
         c = line[1];
         ss << c;
@@ -338,17 +422,16 @@ std::string parseNextCommand(int& currentCursorPos,
         // Check if we have a digit
         // Or a lowercase charcter
         if (isdigit(c) || islower(c)) {
-            std::cout << "Setting register " << c << " to ";
+            // std::cout << "Setting register " << c << " to ";
 
             if (singleCharacter) {
                 registerMap[regName] = lines[currentLinePos][currentCursorPos];
 
                 line = line.substr(4,line.size()); // e.g "ayl
 
-                std::cout << registerMap[regName]  << std::endl;
             } else
-                std::cout << "Setting register " << c << " to ";
-            if (multiCharacterWithCharacter) {
+
+                if (multiCharacterWithCharacter) {
                 std::string val;
                 for (int i=currentCursorPos; i<lines[currentLinePos].size();i++) {
                     if (lines[currentLinePos][i]==f) break;
@@ -357,14 +440,9 @@ std::string parseNextCommand(int& currentCursorPos,
 
                 registerMap[regName] = val;
 
-                std::cout << val << std::endl;
-
                 line = line.substr(5,line.size()); // e.g "ayt.
 
             } else if (multiCharacterWithNr) {
-
-                std::cout << "Setting register " << c << " to ";
-
 
                 if (numberFound) {
                     std::string val = "";
@@ -382,26 +460,39 @@ std::string parseNextCommand(int& currentCursorPos,
 
             }
 
-            std::cout << std::endl;
+            std::string debugStr;
+            if (singleCharacter) debugStr="yl";
+            if (multiCharacterWithCharacter) debugStr = "yt.";
+            if (multiCharacterWithNr) debugStr="y"+std::to_string(number)+"l";
 
+            std::string commandStr="\""+regName;
 
+            if (singleCharacter) commandStr+="yl";
+            if (multiCharacterWithCharacter) commandStr+="yt"+f;
+            if (multiCharacterWithNr) commandStr+="y"+std::to_string(number)+"l";
+
+            printCommand(commandStr,"Storing in register "+regName+" "+registerMap[regName]);
 
         } else {
             // Or an uppercase
-            std::cout << "Appending to register " << c << " ";
+            std::string registerCommand = regName;
 
             boost::algorithm::to_lower(regName);
 
-            /*
-            if (c=='d') {
-                std::cout << "Debug" << std::endl;
-            }*/
+            std::string val = "";
+
+
 
             if (singleCharacter) {
                 registerMap[regName] = registerMap[regName] + lines[currentLinePos][currentCursorPos];
                 line = line.substr(4,line.size()); // e.g "Ayl
 
-                std::cout << lines[currentLinePos][currentCursorPos] << " Newval is:" << registerMap[regName] << std::endl;
+                if (lines[currentLinePos][currentCursorPos]=='!') {
+                    std::cout << "Ende erreicht"<< std::endl;
+                    line = "";
+                    return line;
+                }
+
 
             } else
                 if (multiCharacterWithCharacter) {
@@ -414,23 +505,19 @@ std::string parseNextCommand(int& currentCursorPos,
                     registerMap[regName] = registerMap[regName]+val;
                     line = line.substr(5,line.size()); // e.g "Ayt.
 
-                    std::cout << val << " Newval is:" << registerMap[regName] <<  std::endl;
 
 
                 }
 
                 else if (multiCharacterWithNr) {
 
-                    std::cout << "Appending to register " << c << " to ";
-
 
                     if (numberFound) {
-                        std::string val = "";
+                        val = "";
                         for (int i=0; i<number; i++) {
                             val += lines[currentLinePos][currentCursorPos+i];
                         }
 
-                        std::cout << val;
                         registerMap[regName] += val;
 
                     }
@@ -438,11 +525,23 @@ std::string parseNextCommand(int& currentCursorPos,
 
                     line = line.substr(4+lenNumberStr,line.size()); // "Gy3l
 
-
-                    std::cout << " Newval is:" << registerMap[regName];
-                    std::cout << std::endl;
-
                 }
+
+
+            std::string debugStr;
+            if (singleCharacter) debugStr="yl";
+            if (multiCharacterWithCharacter) debugStr = "yt.";
+            if (multiCharacterWithNr) debugStr="y"+std::to_string(number)+"l";
+
+
+            std::string commandStr="\""+registerCommand;
+
+            if (singleCharacter) commandStr+="yl";
+            if (multiCharacterWithCharacter) commandStr+="yt"+f;
+            if (multiCharacterWithNr) commandStr+="y"+std::to_string(number)+"l";
+
+            printCommand(commandStr,"Appending to register "+regName+" "+val+" Result is:"+registerMap[regName]);
+
 
 
             break;
@@ -458,8 +557,12 @@ std::string parseNextCommand(int& currentCursorPos,
     }
 
     int main(int argc, char**argv) {
+
+        initDotFile();
+
         std::ifstream is;
-        is.open("vim-5ca46d1e8afdc0b30b25fdf8f69f868b33a16241.txt.1", std::ios::binary);
+        // is.open("vim-5ca46d1e8afdc0b30b25fdf8f69f868b33a16241.txt.1", std::ios::binary);
+        is.open("dummy", std::ios::binary);
 
 
         std::vector<std::string> strs;
@@ -472,30 +575,47 @@ std::string parseNextCommand(int& currentCursorPos,
             strs.push_back(line);
         }
 
+        is.close();
+
         int lineNr = 1;
 
-        /*
-    for (std::size_t i=0; i<strs.size(); i++) {
-        std::cout << (lineNr++) << " " <<  strs[i] << std::endl;
-    }
-    */
 
         // Execute last line..
+        for (uint64_t i=0; i<4294967296-1;i++) {
+            uint64_t divider = i;
 
-        std::string currentLine = strs[strs.size()-1];
-        std::string currentLineUnmodified = strs[strs.size()-1];
-        int currentCursorPos = 0;
-        int currentLinePos = strs.size()-1 ;
+            for (uint8_t idx = 0; idx<33; idx++) {
+                uint32_t remainder = divider % alphabet.size();
+                divider /= alphabet.size();
+                flag[5+idx]= alphabet[remainder];
+            }
+            registerMap.clear();
 
-        while (currentLine.size()>0) {
-            currentLine = parseNextCommand(currentCursorPos,
-                                           currentLinePos,
-                                           currentLine,
-                                           currentLineUnmodified,
-                                           strs);
+            for (std::size_t flagIdx=0; flagIdx<flag.size();flagIdx++){
+                strs[3][flagIdx]=flag[flagIdx];
+            }
+
+            std::cout << flag << std::endl;
+
+            std::string currentLine = strs[strs.size()-1];
+            std::string currentLineUnmodified = strs[strs.size()-1];
+            int currentCursorPos = 0;
+            int currentLinePos = strs.size()-1 ;
+
+            while (currentLine.size()>0) {
+                currentLine = parseNextCommand(currentCursorPos,
+                                               currentLinePos,
+                                               currentLine,
+                                               currentLineUnmodified,
+                                               strs);
+            }
+
+            for (int idxStates = 0; idxStates<stateMachinePairs[flag].size(); idxStates++) {
+                std::cout << "(" << stateMachinePairs[flag][idxStates].first << stateMachinePairs[flag][idxStates].second << ") ";
+            }
+            std::cout << std::endl;
+            // exit(1);
         }
 
-
-        is.close();
 
     }
