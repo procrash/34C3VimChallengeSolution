@@ -1,0 +1,33 @@
+std::string flag = "34C3_01234567890123456789012345678901"
+
+std::string line6="@Wk0KVmQ3rFpgcZy.C8eY7b_sBSETUvwiM5LPzuNofhn6Ox1G942jdaXlDRtHqJAI6HntUkUZmdU\".i\"";
+std::string line7 = "@,hhGGl,\"_Gl@l,l2\"\"\"@l,2G_22h_@2Glh2\"@@,2__G2@hGh,l_l_\"hGh,_,\"\"@H1\"jDA\"h\"53AA6.d";
+std::string line8 = "22l,2_lG,@l_,,@Ghl\"2h\"l@@h,_@l_lG2h\"h@l,2,\"hGGG,\"_hG@2@2\"_\"_h_G\"\"@Bd@#$BEj_GG5,B";
+std::string line9 = "._3d93@jA_F\"H.#0GB8#c,5d#9lAaakh18ck2eGDcHlG7A21Cg8\"C$3$e$\"D@l.E^A6eDlbec5$D\".hl";
+
+
+a= 20 left one down
+
+
+for (int idx=0; idx<flag.size();idx++) {
+    b = 20 
+    char c = flag[idx];
+    pos = line6.findFirstOf(c);
+    e = line7[pos-1]; // pos>=0
+    f = line8[pos-1];
+    
+    pos2 = line9.find(e);
+    
+    execute a
+    append to b until .
+    append j
+        
+    execute b
+    a=20
+    append to a until .
+    append to a j
+    
+    go to col 40
+    execute a    
+    
+}

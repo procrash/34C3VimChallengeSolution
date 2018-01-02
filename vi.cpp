@@ -39,19 +39,23 @@ std::string lastPositionString = "";
 
 uint64_t locationsWritten = 0;
 
+std::string currentCharacter = "";
+std::stringstream ccSS;
 
-std::map<std::string, std::vector<std::pair<uint64_t, uint64_t>>> stateMachinePairs;
+std::map<std::string, std::vector<std::tuple<uint64_t, uint64_t, std::string>>> stateMachinePairs;
 
+std::map<std::string, bool> writtenStrings;
 
 std::string flag = "34C3_012345678901234567890123456789012";
 
 void addDotLocation(uint64_t row, uint64_t col) {
+    if (row<9 || row>258) return;
 
     if (row==107 && col==0) {
         std::cout << "Found destination with " << flag << std::endl;
         exit(1);
     }
-    stateMachinePairs[flag].push_back(std::pair<uint64_t, uint64_t>(row,col));
+    stateMachinePairs[flag].push_back(std::tuple<uint64_t, uint64_t,std::string>(row,col, currentCharacter));
 
 
     /*
@@ -62,7 +66,7 @@ void addDotLocation(uint64_t row, uint64_t col) {
 
     locationsWritten++;
 
-    if (locationsWritten>300) return;
+   // if (locationsWritten>300) return;
 
     std::ofstream os;
     os.open("dotFile.txt", std::ios::app);
@@ -70,20 +74,27 @@ void addDotLocation(uint64_t row, uint64_t col) {
     std::stringstream iss;
     iss << "\"" << row << "," << col << "\"";
 
+
     if (lastPositionString!="") {
         std::string currentPosString = iss.str();
 
-        os << "edge [color=" << edgeColor << "]" << std::endl;
+        std::string stringToWrite =  lastPositionString + " -> " + currentPosString ;
 
-        os << lastPositionString << " -> " << currentPosString << std::endl;
+        if (writtenStrings.find(stringToWrite)==writtenStrings.end()) {
+            os << "edge [color=" << edgeColor << "]" << std::endl;
+            os << stringToWrite << std::endl;
+            writtenStrings[stringToWrite]=true;
+            std::cout << flag << std::endl;
+        }
 
         lastPositionString = currentPosString;
     } else {
         std::string currentPosString = iss.str();
+        writtenStrings[iss.str()]=true;
         os <<  currentPosString << std::endl;
         lastPositionString = currentPosString;
-
     }
+
 
     os.close();
 
@@ -105,7 +116,21 @@ void printCommand(std::string command, std::string comment) {
     */
 }
 
+void checkVimCodeValidities(std::vector<std::string> strs) {
+    std::vector<std::string> lineCommands;
+    for (std::size_t i=9;i<260;i++) {
+        std::string line = strs[i];
+        std::vector<std::string> splitted;
+        boost::split(splitted,line,boost::is_any_of("."));
 
+        for (auto entry:splitted) {
+            std::cout << entry << std::endl;
+        }
+
+    }
+
+    exit(1);
+}
 
 bool tryReadNumber(std::string& line, uint64_t& number) {
     int nrOfDigits =-1;
@@ -206,13 +231,16 @@ std::string parseNextCommand(int& currentCursorPos,
 
         line = registerMap[regName]+ line;
 
-        printCommand("@"+regName,"Executing code in register " + regName + " " + registerMap[regName]);
+        // if (regName=="a" || regName=="b") {
+        //    std::cout << std::endl;
+        //}
 
+        printCommand("@"+regName,"Executing code in register " + regName + " " + registerMap[regName]);
         break;
 
     case '^' : // Go to beginning of line
 
-        printCommand("^","Go to begining of line "+std::to_string(currentLinePos));
+        printCommand("^","Go to begining of line "+std::to_string(currentLinePos+1));
 
         currentCursorPos = 0;
 
@@ -222,7 +250,7 @@ std::string parseNextCommand(int& currentCursorPos,
         break;
     case '$' : // Go to the end of line
 
-        printCommand("$","Go to end of line "+std::to_string(currentLinePos));
+        printCommand("$","Go to end of line "+std::to_string(currentLinePos+1));
 
         currentCursorPos = lines[currentLinePos].size()-1;
 
@@ -231,12 +259,30 @@ std::string parseNextCommand(int& currentCursorPos,
         line = line.substr(1,line.size()); // e.g "Ayt.
         break;
     case 'l' : // Go one to the right
+        if (numberFound) {
+            currentCursorPos+=number;
+        } else {
+            currentCursorPos++;
+        }
 
-        currentCursorPos++;
+        if (currentCursorPos>lines[currentLinePos].size()-1) {
+            currentCursorPos = lines[currentLinePos].size()-1;
 
-        if (currentCursorPos>lines[currentLinePos].size()-1) currentCursorPos = lines[currentLinePos].size()-1;
+            if (!numberFound) {
+                printCommand("l","Go one to the right "+std::to_string(currentCursorPos+1));
+            } else {
+                printCommand(std::to_string(number)+"l","Go "+std::to_string(number)+" to the right "+std::to_string(currentCursorPos+1));
+            }
+            // Exit if you can't go further to the right
+            line = "";
+            return line;
+        }
 
-        printCommand("l","Go one to the right "+std::to_string(currentCursorPos));
+        if (!numberFound) {
+            printCommand("l","Go one to the right "+std::to_string(currentCursorPos+1));
+        } else {
+            printCommand(std::to_string(number)+"l","Go "+std::to_string(number)+" to the right "+std::to_string(currentCursorPos+1));
+        }
 
         addDotLocation(currentLinePos, currentCursorPos);
 
@@ -244,10 +290,23 @@ std::string parseNextCommand(int& currentCursorPos,
         break;
 
     case 'h' : // Go one to the left
+        if (numberFound) currentCursorPos-=number; else currentCursorPos--;
 
-        if (currentCursorPos>0) currentCursorPos--;
+        if (currentCursorPos<0)  {
+            currentCursorPos=0;
 
-        printCommand("h","Go one to the left "+std::to_string(currentCursorPos));
+            if (!numberFound) {
+                printCommand("h","Go one to the left "+std::to_string(currentCursorPos+1));
+                line = "";
+                return line;
+            }
+        }
+
+        if (!numberFound) {
+            printCommand("h","Go one to the left "+std::to_string(currentCursorPos+1));
+        } else {
+            printCommand(std::to_string(number)+"h","Go "+std::to_string(number)+" to the left "+std::to_string(currentCursorPos+1));
+        }
 
         addDotLocation(currentLinePos, currentCursorPos);
 
@@ -255,13 +314,29 @@ std::string parseNextCommand(int& currentCursorPos,
         break;
     case 'j' : // Go one down, if down line is less strlen then go to the end,
         // Not implemented yet, if one goes up again, go to the oldposition...
+        if (numberFound) {
+            currentLinePos += number;
+        } else {
+            currentLinePos++;
+        }
 
-        currentLinePos++;
-        if (currentLinePos>lines.size()-1) currentLinePos = lines.size()-1;
+        if (currentLinePos>lines.size()-1) {
+            currentLinePos = lines.size()-1;
+
+            if (!numberFound) {
+                printCommand("j","Go one line down "+std::to_string(currentLinePos+1));
+                line = "";
+                return line;
+            }
+        }
 
         if (currentCursorPos>lines[currentLinePos].size()-1) currentCursorPos = lines[currentLinePos].size()-1;
 
-        printCommand("j","Go one line down "+std::to_string(currentLinePos));
+        if (!numberFound) {
+            printCommand("j","Go one line down "+std::to_string(currentLinePos+1));
+        } else {
+            printCommand(std::to_string(number)+"j","Go "+std::to_string(number)+" line down "+std::to_string(currentLinePos+1));
+        }
 
         addDotLocation(currentLinePos, currentCursorPos);
 
@@ -271,11 +346,29 @@ std::string parseNextCommand(int& currentCursorPos,
 
     case 'k' : // Go one up, if up line is less strlen then go to the end,
         // Not implemented yet, if one down up again, go to the oldposition...
+        if (numberFound) {
+            currentLinePos-=number;
+        } else {
+            currentLinePos--;
+        }
 
-        if (currentLinePos>0) currentLinePos--;
+        if (currentLinePos<0) {
+            currentLinePos = 0;
+
+            if (!numberFound) {
+                printCommand("k","Go one line up "+std::to_string(currentLinePos+1));
+                line = "";
+                return line;
+            }
+        }
+
         if (currentCursorPos>lines[currentLinePos].size()-1) currentCursorPos = lines[currentLinePos].size()-1;
 
-        printCommand("k","Go one line up "+std::to_string(currentLinePos));
+        if (!numberFound) {
+            printCommand("k","Go one line up "+std::to_string(currentLinePos+1));
+        } else {
+            printCommand(std::to_string(number)+"k","Go "+std::to_string(number)+" line up "+std::to_string(currentLinePos+1));
+        }
 
         addDotLocation(currentLinePos, currentCursorPos);
 
@@ -323,7 +416,7 @@ std::string parseNextCommand(int& currentCursorPos,
             if (lines[currentLinePos][i]==c) {
                 // std::cout << "found at " << i;
                 currentCursorPos = i;
-                printCommand("f"+ss.str(),"find  "+ss.str()+" "+std::to_string(i));
+                printCommand("f"+ss.str(),"find  "+ss.str()+" "+std::to_string(i+i));
 
                 addDotLocation(currentLinePos, currentCursorPos);
 
@@ -356,7 +449,7 @@ std::string parseNextCommand(int& currentCursorPos,
                 // std::cout << "found at " << i;
                 currentCursorPos = i;
 
-                printCommand("F"+ss.str(),"Reverse find  "+ss.str()+" Found @"+std::to_string(i));
+                printCommand("F"+ss.str(),"Reverse find  "+ss.str()+" Found @"+std::to_string(i+1));
                 found = true;
 
                 addDotLocation(currentLinePos, currentCursorPos);
@@ -450,7 +543,7 @@ std::string parseNextCommand(int& currentCursorPos,
                         val += lines[currentLinePos][currentCursorPos+i];
                     }
 
-                    std::cout << val << std::endl;
+                    // std::cout << val << std::endl;
                     registerMap[regName] = val;
 
                 }
@@ -476,6 +569,11 @@ std::string parseNextCommand(int& currentCursorPos,
         } else {
             // Or an uppercase
             std::string registerCommand = regName;
+
+           // if (regName=="B") {
+           //     std::cout << std::endl;
+           // }
+
 
             boost::algorithm::to_lower(regName);
 
@@ -534,11 +632,24 @@ std::string parseNextCommand(int& currentCursorPos,
             if (multiCharacterWithNr) debugStr="y"+std::to_string(number)+"l";
 
 
+            std::stringstream ssChr;
+            ssChr << f;
+
             std::string commandStr="\""+registerCommand;
 
             if (singleCharacter) commandStr+="yl";
-            if (multiCharacterWithCharacter) commandStr+="yt"+f;
+            if (multiCharacterWithCharacter) commandStr+="yt"+ssChr.str();
             if (multiCharacterWithNr) commandStr+="y"+std::to_string(number)+"l";
+
+            if (regName=="d" && singleCharacter)
+            {
+
+                ccSS << lines[currentLinePos][currentCursorPos];
+                // std::cout << ccSS.str()<< std::endl;
+
+                currentCharacter = ccSS.str();
+
+            }
 
             printCommand(commandStr,"Appending to register "+regName+" "+val+" Result is:"+registerMap[regName]);
 
@@ -562,7 +673,7 @@ std::string parseNextCommand(int& currentCursorPos,
 
         std::ifstream is;
         // is.open("vim-5ca46d1e8afdc0b30b25fdf8f69f868b33a16241.txt.1", std::ios::binary);
-        is.open("dummy", std::ios::binary);
+        is.open("dummy2", std::ios::binary);
 
 
         std::vector<std::string> strs;
@@ -577,11 +688,15 @@ std::string parseNextCommand(int& currentCursorPos,
 
         is.close();
 
+        //checkVimCodeValidities(strs);
+
         int lineNr = 1;
 
 
         // Execute last line..
         for (uint64_t i=0; i<4294967296-1;i++) {
+
+            /*
             uint64_t divider = i;
 
             for (uint8_t idx = 0; idx<33; idx++) {
@@ -589,13 +704,18 @@ std::string parseNextCommand(int& currentCursorPos,
                 divider /= alphabet.size();
                 flag[5+idx]= alphabet[remainder];
             }
+            */
+
             registerMap.clear();
+            ccSS.str("");
 
             for (std::size_t flagIdx=0; flagIdx<flag.size();flagIdx++){
                 strs[3][flagIdx]=flag[flagIdx];
             }
+            strs[3] = "34C3_";
 
-            std::cout << flag << std::endl;
+            // std::cout << flag << std::endl;
+
 
             std::string currentLine = strs[strs.size()-1];
             std::string currentLineUnmodified = strs[strs.size()-1];
@@ -611,10 +731,12 @@ std::string parseNextCommand(int& currentCursorPos,
             }
 
             for (int idxStates = 0; idxStates<stateMachinePairs[flag].size(); idxStates++) {
-                std::cout << "(" << stateMachinePairs[flag][idxStates].first << stateMachinePairs[flag][idxStates].second << ") ";
+                std::cout << "(" << std::get<0>(stateMachinePairs[flag][idxStates])
+                          << " " << std::get<1>(stateMachinePairs[flag][idxStates]) << "["
+                          << std::get<2>(stateMachinePairs[flag][idxStates])<< "]" << ") ";
             }
-            std::cout << std::endl;
-            // exit(1);
+            //std::cout << std::endl;
+            exit(1);
         }
 
 
