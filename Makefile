@@ -14,7 +14,7 @@ CC            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefau
 CXX           = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
 DEFINES       = -DQT_QML_DEBUG
 CFLAGS        = -pipe -std=c++14 -fpermissive -g $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -W -fPIC $(DEFINES)
-CXXFLAGS      = -pipe -stdlib=libc++ -O0 -std=c++14 -pthread -fpermissive -g -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -W -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -stdlib=libc++ -Ofast -std=c++14 -pthread -fpermissive -g -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -W -fPIC $(DEFINES)
 INCPATH       = -I. -I/usr/local/Cellar/boost/1.64.0_1/include -I../../../Qt_5.9/5.10.0/clang_64/mkspecs/macx-clang
 QMAKE         = /Users/wolfgangmeyerle/Qt_5.9/5.10.0/clang_64/bin/qmake
 DEL_FILE      = rm -f
@@ -37,7 +37,7 @@ COMPRESS      = gzip -9f
 DISTNAME      = vim1.0.0
 DISTDIR = /Users/wolfgangmeyerle/Documents/workspace/Vim/.tmp/vim1.0.0
 LINK          = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
-LFLAGS        = -stdlib=libc++ -std=c++14 -fpermissive -headerpad_max_install_names $(EXPORT_ARCH_ARGS) -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wl,-rpath,@executable_path/Frameworks
+LFLAGS        = -stdlib=libc++ -O0 -std=c++14 -fpermissive -headerpad_max_install_names $(EXPORT_ARCH_ARGS) -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wl,-rpath,@executable_path/Frameworks
 LIBS          = $(SUBLIBS) -lboost_system-mt -L/usr/local/Cellar/boost/1.64.0_1/lib 
 AR            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq
 RANLIB        = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib -s
@@ -1443,7 +1443,8 @@ vi.o: ../Vim/vi.cpp /usr/local/Cellar/boost/1.64.0_1/include/boost/algorithm/str
 		/usr/local/Cellar/boost/1.64.0_1/include/boost/predef/detail/endian_compat.h \
 		/usr/local/Cellar/boost/1.64.0_1/include/boost/math/special_functions/fpclassify.hpp \
 		/usr/local/Cellar/boost/1.64.0_1/include/boost/math/tools/real_cast.hpp \
-		/usr/local/Cellar/boost/1.64.0_1/include/boost/detail/basic_pointerbuf.hpp
+		/usr/local/Cellar/boost/1.64.0_1/include/boost/detail/basic_pointerbuf.hpp \
+		commands.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o vi.o ../Vim/vi.cpp
 
 ####### Install

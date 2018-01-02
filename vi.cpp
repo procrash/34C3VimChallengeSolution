@@ -66,7 +66,7 @@ void addDotLocation(uint64_t row, uint64_t col) {
 
     locationsWritten++;
 
-   // if (locationsWritten>300) return;
+    // if (locationsWritten>300) return;
 
     std::ofstream os;
     os.open("dotFile.txt", std::ios::app);
@@ -81,10 +81,10 @@ void addDotLocation(uint64_t row, uint64_t col) {
         std::string stringToWrite =  lastPositionString + " -> " + currentPosString ;
 
         if (writtenStrings.find(stringToWrite)==writtenStrings.end()) {
-            os << "edge [color=" << edgeColor << "]" << std::endl;
+            // os << "edge [color=" << edgeColor << "]" << std::endl;
             os << stringToWrite << std::endl;
             writtenStrings[stringToWrite]=true;
-            std::cout << flag << std::endl;
+            // std::cout << flag << std::endl;
         }
 
         lastPositionString = currentPosString;
@@ -151,6 +151,7 @@ bool tryReadNumber(std::string& line, uint64_t& number) {
 
 std::map<std::string, std::string> registerMap;
 
+int flagCounter = 0;
 
 std::string parseNextCommand(int& currentCursorPos,
                              int& currentLinePos,
@@ -184,7 +185,7 @@ std::string parseNextCommand(int& currentCursorPos,
         break;
     */
 
-     case '|' : // to screen column "
+    case '|' : // to screen column "
 
         if (numberFound) {
             line = line.substr(1,line.size());
@@ -525,33 +526,33 @@ std::string parseNextCommand(int& currentCursorPos,
             } else
 
                 if (multiCharacterWithCharacter) {
-                std::string val;
-                for (int i=currentCursorPos; i<lines[currentLinePos].size();i++) {
-                    if (lines[currentLinePos][i]==f) break;
-                    val += lines[currentLinePos][i];
-                }
-
-                registerMap[regName] = val;
-
-                line = line.substr(5,line.size()); // e.g "ayt.
-
-            } else if (multiCharacterWithNr) {
-
-                if (numberFound) {
-                    std::string val = "";
-                    for (int i=0; i<number; i++) {
-                        val += lines[currentLinePos][currentCursorPos+i];
+                    std::string val;
+                    for (int i=currentCursorPos; i<lines[currentLinePos].size();i++) {
+                        if (lines[currentLinePos][i]==f) break;
+                        val += lines[currentLinePos][i];
                     }
 
-                    // std::cout << val << std::endl;
                     registerMap[regName] = val;
 
+                    line = line.substr(5,line.size()); // e.g "ayt.
+
+                } else if (multiCharacterWithNr) {
+
+                    if (numberFound) {
+                        std::string val = "";
+                        for (int i=0; i<number; i++) {
+                            val += lines[currentLinePos][currentCursorPos+i];
+                        }
+
+                        // std::cout << val << std::endl;
+                        registerMap[regName] = val;
+
+                    }
+
+                    line = line.substr(4+lenNumberStr,line.size()); // "Gy3l
+
+
                 }
-
-                line = line.substr(4+lenNumberStr,line.size()); // "Gy3l
-
-
-            }
 
             std::string debugStr;
             if (singleCharacter) debugStr="yl";
@@ -570,9 +571,9 @@ std::string parseNextCommand(int& currentCursorPos,
             // Or an uppercase
             std::string registerCommand = regName;
 
-           // if (regName=="B") {
-           //     std::cout << std::endl;
-           // }
+            // if (regName=="B") {
+            //     std::cout << std::endl;
+            // }
 
 
             boost::algorithm::to_lower(regName);
@@ -643,7 +644,8 @@ std::string parseNextCommand(int& currentCursorPos,
 
             if (regName=="d" && singleCharacter)
             {
-
+                flagCounter++;
+                if (flagCounter>1)
                 ccSS << lines[currentLinePos][currentCursorPos];
                 // std::cout << ccSS.str()<< std::endl;
 
@@ -662,82 +664,145 @@ std::string parseNextCommand(int& currentCursorPos,
     }
 
 
-        return line;
+    return line;
 
 
+}
+
+int main(int argc, char**argv) {
+
+    initDotFile();
+    std::map<std::string, std::string> stateLengths;
+
+
+    std::ifstream is;
+    // is.open("vim-5ca46d1e8afdc0b30b25fdf8f69f868b33a16241.txt.1", std::ios::binary);
+    is.open("dummy2", std::ios::binary);
+
+
+    std::vector<std::string> strs;
+
+
+
+    std::string line;
+
+    while(getline(is, line)) {
+        strs.push_back(line);
     }
 
-    int main(int argc, char**argv) {
+    is.close();
 
-        initDotFile();
+    //checkVimCodeValidities(strs);
 
-        std::ifstream is;
-        // is.open("vim-5ca46d1e8afdc0b30b25fdf8f69f868b33a16241.txt.1", std::ios::binary);
-        is.open("dummy2", std::ios::binary);
+    int lineNr = 1;
+
+    std::vector<std::string> todo;
+    std::vector<std::string> tmpTodo;
+    std::vector<std::string> tmpTodo2;
+
+    todo.push_back("34C3_");
+
+    // Execute last line..
+
+    bool shorterCombiantionFound;
+    do
+    {
+
+        shorterCombiantionFound = false;
 
 
-        std::vector<std::string> strs;
+        for (uint64_t i=0; i<alphabet.size();i++) {
+
+            for (auto entry: todo) {
+
+                flag =entry;
+                if (flag.length()<5 ||
+                        flag.substr(0, 5)!="34C3_" ||
+                        flag.size()>37)
+                    continue;
 
 
+                registerMap.clear();
+                ccSS.str("");
 
-        std::string line;
+                // for (std::size_t flagIdx=0; flagIdx<flag.size();flagIdx++){
+                //    strs[3][flagIdx]=flag[flagIdx];
+                //}
 
-        while(getline(is, line)) {
-            strs.push_back(line);
+                std::stringstream fss;
+                fss << alphabet[i];
+
+                flag += fss.str();
+
+                if (flag.size()<=37) tmpTodo2.push_back(flag);
+
+                strs[3] = flag;
+
+                // std::cout << flag << std::endl;
+
+
+                std::string currentLine = strs[strs.size()-1];
+                std::string currentLineUnmodified = strs[strs.size()-1];
+                int currentCursorPos = 0;
+                int currentLinePos = strs.size()-1 ;
+                flagCounter =0; // dirty workaround
+
+                while (currentLine.size()>0) {
+                    currentLine = parseNextCommand(currentCursorPos,
+                                                   currentLinePos,
+                                                   currentLine,
+                                                   currentLineUnmodified,
+                                                   strs);
+                }
+
+
+                // Analyze shortest paths to individual states...
+
+
+                for (int idxStates = 0; idxStates<stateMachinePairs[flag].size(); idxStates++) {
+                    std::string stateName = std::to_string(std::get<0>(stateMachinePairs[flag][idxStates]))+" "
+                            +std::to_string(std::get<1>(stateMachinePairs[flag][idxStates]));
+
+                    std::string characterCombination = std::get<2>(stateMachinePairs[flag][idxStates]);
+
+
+                    if (stateLengths.find(stateName)==stateLengths.end()
+                            || stateLengths[stateName].length()>characterCombination.length()
+                            )
+                    {
+//                        int cond;
+//                        if (stateLengths.find(characterCombination)==stateLengths.end()) cond = 1;
+//                        else cond = 2;
+
+                        stateLengths[stateName] = characterCombination;
+                        std::cout << "Found shorter combination to " << stateName << " with " << characterCombination << " "  << std::endl;
+                        shorterCombiantionFound = true;
+
+                        if (std::find(tmpTodo.begin(), tmpTodo.end(),characterCombination)==tmpTodo.end())
+                          tmpTodo.push_back(characterCombination);
+                    }
+                }
+            }
+            //                for (int idxStates = 0; idxStates<stateMachinePairs[flag].size(); idxStates++) {
+            //                    std::cout << "(" << std::get<0>(stateMachinePairs[flag][idxStates])
+            //                              << " " << std::get<1>(stateMachinePairs[flag][idxStates]) << "["
+            //                              << std::get<2>(stateMachinePairs[flag][idxStates])<< "]" << ") ";
+            //                }
+            //                std::cout << std::endl;
+            // exit(1);
         }
 
-        is.close();
 
-        //checkVimCodeValidities(strs);
+        todo.clear();
+        todo = tmpTodo;
 
-        int lineNr = 1;
-
-
-        // Execute last line..
-        for (uint64_t i=0; i<4294967296-1;i++) {
-
-            /*
-            uint64_t divider = i;
-
-            for (uint8_t idx = 0; idx<33; idx++) {
-                uint32_t remainder = divider % alphabet.size();
-                divider /= alphabet.size();
-                flag[5+idx]= alphabet[remainder];
-            }
-            */
-
-            registerMap.clear();
-            ccSS.str("");
-
-            for (std::size_t flagIdx=0; flagIdx<flag.size();flagIdx++){
-                strs[3][flagIdx]=flag[flagIdx];
-            }
-            strs[3] = "34C3_";
-
-            // std::cout << flag << std::endl;
-
-
-            std::string currentLine = strs[strs.size()-1];
-            std::string currentLineUnmodified = strs[strs.size()-1];
-            int currentCursorPos = 0;
-            int currentLinePos = strs.size()-1 ;
-
-            while (currentLine.size()>0) {
-                currentLine = parseNextCommand(currentCursorPos,
-                                               currentLinePos,
-                                               currentLine,
-                                               currentLineUnmodified,
-                                               strs);
-            }
-
-            for (int idxStates = 0; idxStates<stateMachinePairs[flag].size(); idxStates++) {
-                std::cout << "(" << std::get<0>(stateMachinePairs[flag][idxStates])
-                          << " " << std::get<1>(stateMachinePairs[flag][idxStates]) << "["
-                          << std::get<2>(stateMachinePairs[flag][idxStates])<< "]" << ") ";
-            }
-            //std::cout << std::endl;
-            exit(1);
+        for (auto entry : tmpTodo2) {
+            if (std::find(todo.begin(), todo.end(), entry) == todo.end()) todo.push_back(entry);
         }
 
+        tmpTodo.clear();
 
-    }
+    } while (todo.size()>0);
+
+
+}
