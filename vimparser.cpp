@@ -24,6 +24,9 @@ void VimParser::resetFlagCounter() {
 
 }
 
+void VimParser::clearStates() {
+    this->stateMachinePairs.clear();
+}
 void VimParser::setFlag(std::string flag) {
     this->flag = flag;
     lines[3] = flag;
@@ -108,7 +111,7 @@ void VimParser::printCommand(std::string command, std::string comment) {
 std::string VimParser::parseGotoScreenColumn(std::string line, bool numberFound, uint64_t number) {
     if (numberFound) {
         line = line.substr(1,line.size());
-        currentCursorPos = number;
+        currentCursorPos = number-1;
         printCommand(std::to_string(number) +"|","Moving cursor to screen column "+std::to_string(number));
         addDotLocation(currentLinePos, currentCursorPos);
     }

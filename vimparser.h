@@ -56,6 +56,8 @@ public:
 
     void resetFlagCounter();
 
+    void clearStates();
+
     void setFlag(std::string flag);
 
     void addDotLocation(uint64_t row, uint64_t col);
