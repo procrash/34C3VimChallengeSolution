@@ -83,16 +83,52 @@ void printCombinations() {
 
         for (auto col : cols) {
             std::stringstream ss;
+            std::pair<uint64_t, uint64_t> key = std::pair<uint64_t, uint64_t>(entry.first, col);
 
-            ss << std::to_string(col+1) << " ";
+            ss << std::to_string(col+1);
 
-            for (std::size_t i=0; i<6-ss.str().size(); i++) {
+            for (std::size_t i=0; i<40-ss.str().size(); i++) {
                 os << " ";
             }
+
+
             os << ss.str();
         }
         os << std::endl;
     }
+
+    os << std::endl;
+
+    for (auto entry : sortedColumns) {
+        std::stringstream ss;
+
+        ss << std::to_string(entry.first+1) << ": ";
+
+        for (std::size_t i=0; i<10-ss.str().size(); i++) {
+            os << " ";
+        }
+
+        os << ss.str();
+        std::vector<uint64_t> cols = entry.second;
+
+        for (auto col : cols) {
+            std::stringstream ss;
+            std::pair<uint64_t, uint64_t> key = std::pair<uint64_t, uint64_t>(entry.first, col);
+
+            ss << std::to_string(col+1) << ":" << stateLengths[key];
+
+            for (std::size_t i=0; i<60-ss.str().size(); i++) {
+                os << " ";
+            }
+
+
+            os << ss.str();
+        }
+        os << std::endl;
+    }
+
+    os << std::endl;
+
 
     os.close();
 
@@ -255,7 +291,7 @@ int main(int argc, char**argv) {
 
         auto seconds = std::chrono::duration_cast<std::chrono::milliseconds>(now-lastWrittenTS);
 
-        if (dataAmended && seconds.count()>10) {
+        if (dataAmended && seconds.count()>300 || todo.size()==0) {
             printCombinations();
             lastWrittenTS = std::chrono::system_clock::now();
         }

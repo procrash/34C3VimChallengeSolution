@@ -42,12 +42,7 @@ void VimParser::setLines(std::vector<std::string> lines) {
 }
 
 void VimParser::addDotLocation(uint64_t row, uint64_t col) {
-    if (row<9 || row>258) return;
-
-    if (row==107 && col==0) {
-        std::cout << "Found destination with " << flag << std::endl;
-        exit(1);
-    }
+    // if (row<9 || row>258) return;
     stateMachinePairs[flag].push_back(std::tuple<uint64_t, uint64_t,std::string>(row,col, currentCharacter));
 
 
@@ -68,28 +63,47 @@ void VimParser::addDotLocation(uint64_t row, uint64_t col) {
     iss << "\"" << row << "," << col << "\"";
 
 
+
+    std::stringstream issLabel;
+
+    if (currentCharacter.size()>0) {
+        issLabel << " [ label=\"";
+
+        // Escape Quote
+        if (currentCharacter[currentCharacter.size()-1]=='\"') {
+            issLabel << "\\";
+        }
+
+        issLabel << currentCharacter[currentCharacter.size()-1] << "\" ];";
+    }
+
     if (lastPositionString!="") {
         std::string currentPosString = iss.str();
 
-        std::string stringToWrite =  lastPositionString + " -> " + currentPosString ;
+        std::string stringToWrite =  lastPositionString + " -> " + currentPosString;
 
         if (writtenStrings.find(stringToWrite)==writtenStrings.end()) {
             // os << "edge [color=" << edgeColor << "]" << std::endl;
-            os << stringToWrite << std::endl;
-            writtenStrings[stringToWrite]=true;
+            os << stringToWrite << issLabel.str() << std::endl;
+            // writtenStrings[stringToWrite]=true;
             // std::cout << flag << std::endl;
         }
 
         lastPositionString = currentPosString;
     } else {
         std::string currentPosString = iss.str();
-        writtenStrings[iss.str()]=true;
-        os <<  currentPosString << std::endl;
+        // writtenStrings[iss.str()]=true;
+        os <<  currentPosString <<issLabel.str() << std::endl;
         lastPositionString = currentPosString;
     }
 
 
     os.close();
+
+    if (row==107 && col==0) {
+        std::cout << "Found destination with " << flag << std::endl;
+        // exit(1);
+    }
 
     /*
         if (row==3 && col==16) {
@@ -98,7 +112,7 @@ void VimParser::addDotLocation(uint64_t row, uint64_t col) {
 }
 
 void VimParser::printCommand(std::string command, std::string comment) {
-        /*
+    /*
         std::cout << command;
 
         for (std::size_t i=0; i<20-command.length();i++) {
@@ -665,70 +679,70 @@ std::string VimParser::parseNextCommand(std::string line) {
     if (numberFound && number==0) {
         line = parseGotoCursorPositionZero(line);
     } else
-    switch (line[0]) {
+        switch (line[0]) {
 
-    case '|' : // to screen column "
-        line = parseGotoScreenColumn(line, numberFound, number);
-        break;
+        case '|' : // to screen column "
+            line = parseGotoScreenColumn(line, numberFound, number);
+            break;
 
-    case 'y' :
-        line =parseYankCharacter(line);
-        break;
+        case 'y' :
+            line =parseYankCharacter(line);
+            break;
 
-    case 'Y' :
+        case 'Y' :
 
-        line = parseYankWholeLine(line);
-        break;
-    case '@' : // Execute
-        line = parseExecuteRegister(line);
-        break;
+            line = parseYankWholeLine(line);
+            break;
+        case '@' : // Execute
+            line = parseExecuteRegister(line);
+            break;
 
-    case '^' : // Go to beginning of line
+        case '^' : // Go to beginning of line
 
-        line = parseGotoBeginOfLine(line);
-        break;
-    case '$' : // Go to the end of line
+            line = parseGotoBeginOfLine(line);
+            break;
+        case '$' : // Go to the end of line
 
-        line = parseGotoEndOfLine(line);
-        break;
-    case 'l' : // Go one to the right
+            line = parseGotoEndOfLine(line);
+            break;
+        case 'l' : // Go one to the right
 
-        line = parseMoveCursorToRight(line, numberFound, number);
-        break;
+            line = parseMoveCursorToRight(line, numberFound, number);
+            break;
 
-    case 'h' : // Go one to the left
-        line = parseMoveCursorToLeft(line, numberFound, number);
+        case 'h' : // Go one to the left
+            line = parseMoveCursorToLeft(line, numberFound, number);
 
-        break;
-    case 'j' : // Go one down, if down line is less strlen then go to the end,
-        line = parseMoveCursorDown(line, numberFound, number);
-        break;
+            break;
+        case 'j' : // Go one down, if down line is less strlen then go to the end,
+            line = parseMoveCursorDown(line, numberFound, number);
+            break;
 
-    case 'k' : // Go one up, if up line is less strlen then go to the end,
-        line = parseMoveCursorUp(line, numberFound, number);
-        break;
-    case 'G' : // Goto Line found
-        line = parseGotoLine(line, numberFound, number);
-        break;
-    case 'f' : // find command found
+        case 'k' : // Go one up, if up line is less strlen then go to the end,
+            line = parseMoveCursorUp(line, numberFound, number);
+            break;
+        case 'G' : // Goto Line found
+            line = parseGotoLine(line, numberFound, number);
+            break;
+        case 'f' : // find command found
 
-        line = parseFindForward(line);
-        break;
-    case 'F' : // reverse find command found
-        line = parseReverseFind(line);
-        break;
-    case '\"' : // Register command found
+            line = parseFindForward(line);
+            break;
+        case 'F' : // reverse find command found
+            line = parseReverseFind(line);
+            break;
+        case '\"' : // Register command found
 
-        c = line[1];
+            c = line[1];
 
-        if (isdigit(c) || islower(c)) {
-            line = parseSetRegister(line);
-        } else {
-            line = parseAppendRegister(line);
+            if (isdigit(c) || islower(c)) {
+                line = parseSetRegister(line);
+            } else {
+                line = parseAppendRegister(line);
+            }
+
+            break;
         }
-
-        break;
-    }
 
 
     return line;
