@@ -253,9 +253,9 @@ int main(int argc, char**argv) {
 
         auto now = std::chrono::system_clock::now();
 
-        auto seconds = std::chrono::duration_cast<std::chrono::milliseconds>(now-lastWrittenTS);
+        auto seconds = std::chrono::duration_cast<std::chrono::seconds>(now-lastWrittenTS);
 
-        if (dataAmended && seconds.count()>10) {
+        if (dataAmended && seconds.count()>300) {
             printCombinations();
             lastWrittenTS = std::chrono::system_clock::now();
         }
