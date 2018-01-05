@@ -293,9 +293,15 @@ int main(int argc, char**argv) {
 
         auto now = std::chrono::system_clock::now();
 
+<<<<<<< HEAD
         auto seconds = std::chrono::duration_cast<std::chrono::seconds>(now-lastWrittenTS).count();
 
         if (dataAmended && seconds>300 || todo.size()==0) {
+=======
+        auto seconds = std::chrono::duration_cast<std::chrono::seconds>(now-lastWrittenTS);
+
+        if (dataAmended && seconds.count()>300) {
+>>>>>>> 8ba4269846238b54a309872ce83271e610602f49
             printCombinations();
             lastWrittenTS = std::chrono::system_clock::now();
         }
