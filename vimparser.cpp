@@ -21,6 +21,7 @@ void VimParser::resetFlagCounter() {
     currentCursorPos = 0;
     currentLinePos =  0;
     parsingErrorOccured = false;
+    prevStateDefined = false;
 
 }
 
@@ -41,16 +42,65 @@ void VimParser::setLines(std::vector<std::string> lines) {
     this->lines = lines;
 }
 
+void VimParser::writeStatemachine() {
+        std::ofstream os;
+        os.open("dotFile.txt");
+        os << "digraph graphname" << std::endl;
+        os << "{" << std::endl;
+
+        for (auto entry: fromStateToStateWithCharacter) {
+            std::tuple<std::pair<uint64_t,uint64_t>, std::pair<uint64_t,uint64_t>> key = entry.first;
+            std::map<std::string, bool> characters = entry.second;
+            std::string allLetters;
+            for (auto transitionLetter: characters) {
+
+                // Escape Double quotes...
+                if (transitionLetter.first[0]=='\"') {
+                    allLetters+="\\";
+                }
+                allLetters += transitionLetter.first;
+            }
+
+            std::stringstream ssDotFile;
+            ssDotFile << "\"" << std::get<0>(key).first << "," << std::get<0>(key).second << "\"" << "->";
+            ssDotFile << "\"" << std::get<1>(key).first << "," << std::get<1>(key).second << "\"" << " ";
+            ssDotFile << " [ label=\"" << allLetters << "\" ];";
+
+            os << ssDotFile.str() << std::endl;
+        }
+        os << "}" << std::endl;
+        os.close();
+
+
+}
+
 void VimParser::addDotLocation(uint64_t row, uint64_t col) {
     // if (row<9 || row>258) return;
     stateMachinePairs[flag].push_back(std::tuple<uint64_t, uint64_t,std::string>(row,col, currentCharacter));
 
+    std::pair<uint64_t,uint64_t> nextState(row,col);
+
+    if (currentCharacter.size()>0 && prevStateDefined) {
+        std::stringstream ccSS;
+        std::tuple<std::pair<uint64_t,uint64_t>, std::pair<uint64_t,uint64_t>> key(prevState, nextState);
+        ccSS << currentCharacter[currentCharacter.size()-1];
+        fromStateToStateWithCharacter[key][ccSS.str()]=true;
+    }
+
+    prevState = nextState;
+    prevStateDefined = true;
+
+    auto now = std::chrono::system_clock::now();
+
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(now-lastTimeStatesWritten).count();
+
+    if (seconds>300) {
+        writeStatemachine();
+        lastTimeStatesWritten = std::chrono::system_clock::now();
+    }
+
 
     /*
-        if (row==0 && col==11) {
-            std::cout << "Nächstes zeichen" << flagNr << std::endl;
-        }*/
-
 
     locationsWritten++;
 
@@ -99,16 +149,13 @@ void VimParser::addDotLocation(uint64_t row, uint64_t col) {
 
 
     os.close();
+    */
 
     if (row==107 && col==0) {
         std::cout << "Found destination with " << flag << std::endl;
         // exit(1);
     }
 
-    /*
-        if (row==3 && col==16) {
-            exit(1);
-        }*/
 }
 
 void VimParser::printCommand(std::string command, std::string comment) {
@@ -659,6 +706,7 @@ std::string VimParser::parseGotoCursorPositionZero(std::string line) {
 
 std::string VimParser::parseNextCommand(std::string line) {
 
+
     // static int gotoCounter =0;
 
     if (parsingErrorOccured) return "";
@@ -742,6 +790,8 @@ std::string VimParser::parseNextCommand(std::string line) {
             }
 
             break;
+         default: parsingErrorOccured = true;
+                  line = "";
         }
 
 

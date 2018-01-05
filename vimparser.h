@@ -8,11 +8,22 @@
 #include <fstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <tuple>
+#include <utility>
+#include <chrono>
 
 class VimParser
 {
 
 private:
+    std::chrono::system_clock::time_point lastTimeStatesWritten = std::chrono::system_clock::now();
+
+    std::map<std::tuple<std::pair<uint64_t,uint64_t>,
+             std::pair<uint64_t,uint64_t>>,
+             std::map<std::string, bool>> fromStateToStateWithCharacter;
+    bool prevStateDefined{false};
+    std::pair<uint64_t,uint64_t> prevState;
+
 
     bool parsingErrorOccured{false};
 
@@ -60,6 +71,7 @@ public:
 
     void setFlag(std::string flag);
 
+    void writeStatemachine();
     void addDotLocation(uint64_t row, uint64_t col);
 
     void setCursorAndLinePos(int cursorPos, int linePos);

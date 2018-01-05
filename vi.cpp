@@ -83,11 +83,11 @@ void printCombinations() {
 
         for (auto col : cols) {
             std::stringstream ss;
-            std::pair<uint64_t, uint64_t> key = std::pair<uint64_t, uint64_t>(entry.first, col);
+            // std::pair<uint64_t, uint64_t> key = std::pair<uint64_t, uint64_t>(entry.first, col);
 
             ss << std::to_string(col+1);
 
-            for (std::size_t i=0; i<40-ss.str().size(); i++) {
+            for (std::size_t i=0; i<6-ss.str().size(); i++) {
                 os << " ";
             }
 
@@ -183,11 +183,11 @@ int main(int argc, char**argv) {
                 flag =todo[0];
                 if (flag.length()<5 ||
                         flag.substr(0, 5)!="34C3_" ||
-                        flag.size()>37 ||
-                        strsDoneFull[todo[0]] == true)
+                        flag.size()>37)
                     continue;
 
                 vimParser.resetFlagCounter();
+
 
 
 
@@ -199,6 +199,10 @@ int main(int argc, char**argv) {
                 fss << alphabet[i];
 
                 flag += fss.str();
+
+                if (strsDoneFull[flag] == true) continue;
+
+                strsDoneFull[flag] = true;
 
                 if (flag.size()<=37) tmpTodo2.push_back(flag);
 
@@ -257,10 +261,10 @@ int main(int argc, char**argv) {
                             )
                     {
                         stateLengths[pair] = characterCombination;
-                        std::cout << "Found shorter combination to " << std::to_string(row) << " " << std::to_string(col) << " with " << characterCombination << " States:" <<  std::to_string(stateLengths.size()) << " Todo:" << std::to_string(todo.size()) << std::endl;
+                        // std::cout << "Found shorter combination to " << std::to_string(row) << " " << std::to_string(col) << " with " << characterCombination << " States:" <<  std::to_string(stateLengths.size()) << " Todo:" << std::to_string(todo.size()) << std::endl;
 
-                        if (std::find(tmpTodo.begin(), tmpTodo.end(),characterCombination)==tmpTodo.end())
-                            tmpTodo.push_back(characterCombination);
+                        // if (std::find(tmpTodo.begin(), tmpTodo.end(),characterCombination)==tmpTodo.end())
+                        //    tmpTodo.push_back(characterCombination);
                     }
                 }
             }
@@ -268,7 +272,7 @@ int main(int argc, char**argv) {
 
             vimParser.clearStates();
 
-            strsDoneFull[todo[0]] = true;
+
             todo.pop_front();
 
             //                for (int idxStates = 0; idxStates<stateMachinePairs[flag].size(); idxStates++) {
@@ -281,17 +285,17 @@ int main(int argc, char**argv) {
 
         bool dataAmended = false;
         for (auto entry:tmpTodo) {
-            if (std::find(todo.begin(), todo.end(), entry) == todo.end() &&
-                strsDoneFull.find(entry)==strsDoneFull.end())
+            if (std::find(todo.begin(), todo.end(), entry) == todo.end() /*&&
+                strsDoneFull.find(entry)==strsDoneFull.end()*/)
                 todo.push_front(entry);
             dataAmended=true;
         }
 
         auto now = std::chrono::system_clock::now();
 
-        auto seconds = std::chrono::duration_cast<std::chrono::milliseconds>(now-lastWrittenTS);
+        auto seconds = std::chrono::duration_cast<std::chrono::seconds>(now-lastWrittenTS).count();
 
-        if (dataAmended && seconds.count()>300 || todo.size()==0) {
+        if (dataAmended && seconds>300 || todo.size()==0) {
             printCombinations();
             lastWrittenTS = std::chrono::system_clock::now();
         }
@@ -311,6 +315,6 @@ int main(int argc, char**argv) {
         //}
 
     }
-
+    vimParser.writeStatemachine();
 
 }
